@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORI-TYPE診断 | オリエンティアナイト</title>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#111a2d;
+      --card:#18233b;
+      --text:#eef4ff;
+      --muted:#a9b7d6;
+      --accent:#7aa2ff;
+      --accent2:#63e6be;
+      --warn:#ffd166;
+      --danger:#ff7b7b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(122,162,255,.25), transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, rgba(99,230,190,.12), transparent 60%),
+        linear-gradient(140deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:24px 16px 56px;
+    }
+    .hero{
+      border:1px solid rgba(255,255,255,.1);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius:22px;
+      padding:22px 20px;
+      box-shadow:0 18px 45px rgba(0,0,0,.28);
+      margin-bottom:16px;
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:clamp(26px,5vw,42px);
+      line-height:1.15;
+      letter-spacing:.02em;
+    }
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .badge{
+      display:inline-block;
+      margin-right:8px;
+      margin-top:10px;
+      font-size:12px;
+      border:1px solid rgba(122,162,255,.45);
+      color:#dbe7ff;
+      background:rgba(122,162,255,.15);
+      padding:4px 10px;
+      border-radius:999px;
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(24,35,59,.84);
+      backdrop-filter: blur(3px);
+      border-radius:16px;
+      padding:16px;
+      margin:12px 0;
+    }
+    .q-title{
+      font-weight:700;
+      margin:0 0 10px;
+      font-size:16px;
+      line-height:1.5;
+    }
+    .axis{
+      display:inline-block;
+      margin-left:8px;
+      font-size:12px;
+      color:#dfe8ff;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.06);
+      padding:2px 8px;
+      border-radius:999px;
+      vertical-align:middle;
+    }
+    .option{
+      display:block;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      padding:10px 12px;
+      margin:8px 0;
+      cursor:pointer;
+      background:rgba(255,255,255,.02);
+      transition:all .15s ease;
+    }
+    .option:hover{
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.22);
+      transform:translateY(-1px);
+    }
+    .option input{ margin-right:8px; }
+
+    .chips{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    @media(max-width:740px){ .chips{grid-template-columns:1fr;} }
+
+    .pill{
+      display:block;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:999px;
+      padding:9px 12px;
+      cursor:pointer;
+      background:rgba(255,255,255,.03);
+      font-size:14px;
+    }
+    .pill input{ margin-right:8px; }
+
+    .inline{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    select{
+      width:100%;
+      max-width:360px;
+      background:#0f1728;
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.2);
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:15px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    button{
+      border:0;
+      border-radius:12px;
+      font-weight:800;
+      letter-spacing:.01em;
+      padding:12px 18px;
+      cursor:pointer;
+      transition:all .2s ease;
+      font-size:15px;
+    }
+    .btn-primary{
+      color:#0a1326;
+      background:linear-gradient(90deg,var(--accent),#97b8ff);
+      box-shadow:0 8px 20px rgba(122,162,255,.35);
+    }
+    .btn-primary:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+    .btn-secondary{
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.2);
+    }
+
+    .status{
+      margin-top:8px;
+      font-size:13px;
+      color:var(--muted);
+      min-height:1.2em;
+    }
+    .status.ok{ color:#9ff3d9; }
+    .status.ng{ color:#ffb3b3; }
+
+    .result{
+      display:none;
+      margin-top:16px;
+      border:1px solid rgba(99,230,190,.5);
+      background:rgba(99,230,190,.09);
+      border-radius:16px;
+      padding:16px;
+    }
+    .tags{ margin-bottom:8px; }
+    .tag{
+      display:inline-block;
+      font-size:12px;
+      margin-right:8px;
+      margin-bottom:6px;
+      background:rgba(255,209,102,.18);
+      border:1px solid rgba(255,209,102,.5);
+      color:#ffe6ae;
+      padding:4px 8px;
+      border-radius:999px;
+    }
+    .result h2{
+      margin:4px 0 6px;
+      font-size:30px;
+      line-height:1.2;
+    }
+    .result .name{
+      font-size:18px;
+      margin:0 0 8px;
+      color:#dcf7ee;
+      font-weight:700;
+    }
+    .result .desc{
+      margin:0 0 12px;
+      color:#e9fff8;
+    }
+
+    .kpi{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:8px;
+      margin:10px 0 12px;
+    }
+    @media(max-width:900px){ .kpi{grid-template-columns:repeat(2,1fr);} }
+    @media(max-width:480px){ .kpi{grid-template-columns:1fr;} }
+
+    .kpi-card{
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:10px;
+      padding:10px;
+      background:rgba(255,255,255,.08);
+      font-size:14px;
+    }
+    .kpi-card b{ display:block; margin-bottom:4px; }
+
+    .degree{
+      border:1px dashed rgba(255,255,255,.4);
+      border-radius:10px;
+      padding:10px;
+      background:rgba(0,0,0,.12);
+    }
+    .degree strong{ font-size:18px; }
+
+    .foot{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .req{color:#ffd9d9}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>ORI-TYPE診断</h1>
+      <p class="sub">送信すると、あなたのタイプ（4軸）とオリエンティア度が表示されます。</p>
+      <span class="badge">地図→現地 vs 現地→地図</span>
+      <span class="badge">魅せプレー vs 堅実プレー</span>
+      <span class="badge">走力命 vs 読図命</span>
+      <span class="badge">情熱 vs 理性</span>
+    </section>
+
+    <form id="quizForm">
+      <div class="card">
+        <p class="q-title">Q1. レッグ開始時の傾向は？ <span class="axis">M vs F</span></p>
+        <label class="option"><input type="radio" name="q1" value="M" required> A. 地図上で大分読み切ってから、見るべきものを現地で拾っていく（地図→現地）</label>
+        <label class="option"><input type="radio" name="q1" value="F"> B. 地図読みはラインを引く程度にラフに、現地から地図位置を把握（現地→地図）</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q2. 迷った時に最初にすることは？ <span class="axis">M vs F</span></p>
+        <label class="option"><input type="radio" name="q2" value="M" required> A. 立ち止まって整置・現在地特定</label>
+        <label class="option"><input type="radio" name="q2" value="F"> B. 少し歩き回って情報を増やす</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q3. ルート選択で近いのは？ <span class="axis">S vs R</span></p>
+        <label class="option"><input type="radio" name="q3" value="S" required> A. 少し難しくても速くて映える方（魅せプレー）</label>
+        <label class="option"><input type="radio" name="q3" value="R"> B. 多少遠くてもミスしにくい方（堅実プレー）</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q4. レース後の満足はどっち寄り？ <span class="axis">S vs R</span></p>
+        <label class="option"><input type="radio" name="q4" value="S" required> A. 攻めが決まった時</label>
+        <label class="option"><input type="radio" name="q4" value="R"> B. 大崩れなくまとめた時</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q5. タイム短縮の優先は？ <span class="axis">P vs N</span></p>
+        <label class="option"><input type="radio" name="q5" value="P" required> A. 巡航速度・登坂力（走力命）</label>
+        <label class="option"><input type="radio" name="q5" value="N"> B. 読図精度・判断速度（読図命）</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q6. 取りこぼしの原因として多いのは？ <span class="axis">P vs N</span></p>
+        <label class="option"><input type="radio" name="q6" value="P" required> A. 足が足りない</label>
+        <label class="option"><input type="radio" name="q6" value="N"> B. 読図の精度不足</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q7. レース中の判断は？ <span class="axis">E vs L</span></p>
+        <label class="option"><input type="radio" name="q7" value="E" required> A. いけると思ったら攻める（情熱）</label>
+        <label class="option"><input type="radio" name="q7" value="L"> B. 成功率を見て確実に間違のないほうを進む（理性）</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q8. 失敗後の切り替えは？ <span class="axis">E vs L</span></p>
+        <label class="option"><input type="radio" name="q8" value="E" required> A. 気持ちを上げて取り返す</label>
+        <label class="option"><input type="radio" name="q8" value="L"> B. 原因を切り分けて修正する</label>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q9. オリエン経験年数 <span class="req">*</span></p>
+        <select name="years" required>
+          <option value="">選択してください</option>
+          <option value="1">1年未満</option>
+          <option value="2">1〜3年未満</option>
+          <option value="3">3〜5年未満</option>
+          <option value="4">5〜10年未満</option>
+          <option value="5">10年以上</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q10. オリエン熱量（1〜5） <span class="req">*</span></p>
+        <div class="inline">
+          <label class="pill"><input type="radio" name="passion" value="1" required>1</label>
+          <label class="pill"><input type="radio" name="passion" value="2">2</label>
+          <label class="pill"><input type="radio" name="passion" value="3">3</label>
+          <label class="pill"><input type="radio" name="passion" value="4">4</label>
+          <label class="pill"><input type="radio" name="passion" value="5">5</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="q-title">Q11. 競技中あるある（複数選択）</p>
+        <p class="sub" style="margin-bottom:10px;">※選択数をオリエンティア度に加点（最大5点）</p>
+        <div class="chips">
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">逆正置</label>
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">隣の尾根/沢で平行移動</label>
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">オーバーラン</label>
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">隣ポに吸われた</label>
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">コントロールを飛ばした</label>
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">地図が間違ってると思った</label>
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">コンパスが狂ってると思った</label>
+          <label class="pill"><input type="checkbox" name="aruaru" value="1">給水ペナをした</label>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" type="submit" id="submitBtn">送信して診断する</button>
+        <button class="btn-secondary" type="button" id="resetBtn">リセット</button>
+      </div>
+      <div class="status" id="statusMsg"></div>
+    </form>
+
+    <section id="result" class="result">
+      <div class="tags" id="typeTags"></div>
+      <h2 id="typeCode">あなたのタイプ：----</h2>
+      <p class="name" id="typeName"></p>
+      <p class="desc" id="typeDesc"></p>
+
+      <div class="kpi">
+        <div class="kpi-card"><b>地図 / 現地</b><span id="kpiMF">-</span></div>
+        <div class="kpi-card"><b>魅せ / 堅実</b><span id="kpiSR">-</span></div>
+        <div class="kpi-card"><b>走力 / 読図</b><span id="kpiPN">-</span></div>
+        <div class="kpi-card"><b>情熱 / 理性</b><span id="kpiEL">-</span></div>
+      </div>
+
+      <div class="degree">
+        <div id="degree"></div>
+        <div id="degreeDesc"></div>
+      </div>
+    </section>
+
+    <p class="foot">
+      ※回答送信先：Google Apps Script Web App（提供URLを使用）<br>
+      ※保存に失敗しても、診断結果は画面に表示されます。
+    </p>
+  </div>
+
+  <script>
+    // ===== 送信先URL（指定済み） =====
+    const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbw7MA9gYtXRxvBbNug7cPzFbMix-R6RFJBqruGzuqG-9m785efBn0dm2t5xTBGI5UeA7w/exec";
+
+    const TYPE_NAME = {
+      "MSPE":"熱血アタッカー",
+      "MSPL":"理詰めスプリンター",
+      "MSNE":"本能派ナビアタッカー",
+      "MSNL":"精密ナビゲーター",
+      "MRPE":"堅実フィジカル",
+      "MRPL":"盤石のペーサー",
+      "MRNE":"情熱ルートメイカー",
+      "MRNL":"冷静ルートデザイナー",
+      "FSPE":"現場突破ランナー",
+      "FSPL":"現場適応スプリンター",
+      "FSNE":"勘冴える冒険者",
+      "FSNL":"即応型ナビ職人",
+      "FRPE":"安定系パワー型",
+      "FRPL":"再現性モンスター",
+      "FRNE":"直感のサバイバー",
+      "FRNL":"堅実リアリスト"
+    };
+
+    const TYPE_DESC = {
+      "MSPE":"地図で描いた勝ち筋を、勢いと走力で押し切るタイプ。ハマると最速、外すと派手。",
+      "MSPL":"準備と巡航のバランスが高い。崩れにくく、記録を作りやすい。",
+      "MSNE":"攻めの読図が光る。ひらめきでレースの流れを変える。",
+      "MSNL":"再現性の高い読図で安定して強い。チームに一人欲しい存在。",
+      "MRPE":"堅実運用で失点を抑えつつ、必要なところで脚を使える。",
+      "MRPL":"最も事故りにくい完成形。大会で常に上位に残るタイプ。",
+      "MRNE":"安全運転に見えて、要所では大胆。勝負勘がある。",
+      "MRNL":"ミス最小化の名人。ラップの乱高下が少なく信頼感抜群。",
+      "FSPE":"現場判断で一気に突破。展開対応力が高い。",
+      "FSPL":"変化に強いスプリンター。未知の地形でも崩れにくい。",
+      "FSNE":"自由度が高く、創造的なルート選択をする冒険家。",
+      "FSNL":"現地情報の取り込みと読図修正が速い、実戦派ナビ。",
+      "FRPE":"足を活かしつつ安全策を取れる、実直な勝負師。",
+      "FRPL":"判断が一貫しており、結果が安定。長期的に強い。",
+      "FRNE":"直感と胆力でトラブルを生還するサバイバー。",
+      "FRNL":"静かに強いリアリスト。派手さより結果を取りにいく。"
+    };
+
+    function pickAxis(a,b,count){
+      if (count[a] > count[b]) return a;
+      if (count[b] > count[a]) return b;
+      return a; // 同点時の既定値
+    }
+
+    function degreeLabel(score){
+      if (score <= 4) return ["あなたは『ただのランナー（暫定）』", "まだ地図より心拍を信じる時期。伸びしろしかない。"];
+      if (score <= 8) return ["あなたは『地図を見るランナー』", "競技者の入口に立っている。あるあるが増えるほど強くなる。"];
+      if (score <= 12) return ["あなたは『一人前オリエンティア』", "迷いも含めて楽しめる。レース後トークが濃い。"];
+      return ["あなたは『沼の住人』", "週末の予定が地図で埋まる。靴はだいたい土色。"];
+    }
+
+    function setStatus(msg, type=""){
+      const el = document.getElementById("statusMsg");
+      el.textContent = msg || "";
+      el.classList.remove("ok","ng");
+      if(type) el.classList.add(type);
+    }
+
+    function showResult({ code, count, score, deg, degDesc }){
+      const a1 = code[0], a2 = code[1], a3 = code[2], a4 = code[3];
+      document.getElementById("typeTags").innerHTML = `
+        <span class="tag">${a1==="M" ? "地図→現地派" : "現地→地図派"}</span>
+        <span class="tag">${a2==="S" ? "魅せプレー派" : "堅実プレー派"}</span>
+        <span class="tag">${a3==="P" ? "走力命派" : "読図命派"}</span>
+        <span class="tag">${a4==="E" ? "情熱派" : "理性派"}</span>
+      `;
+
+      document.getElementById("typeCode").textContent = `あなたのタイプ：${code}`;
+      document.getElementById("typeName").textContent = TYPE_NAME[code] || "ユニークタイプ";
+      document.getElementById("typeDesc").textContent = TYPE_DESC[code] || "独自バランスを持つタイプです。";
+
+      document.getElementById("kpiMF").textContent = `${count.M} : ${count.F}`;
+      document.getElementById("kpiSR").textContent = `${count.S} : ${count.R}`;
+      document.getElementById("kpiPN").textContent = `${count.P} : ${count.N}`;
+      document.getElementById("kpiEL").textContent = `${count.E} : ${count.L}`;
+
+      document.getElementById("degree").innerHTML = `<strong>${score}/15点　${deg}</strong>`;
+      document.getElementById("degreeDesc").textContent = degDesc;
+
+      const result = document.getElementById("result");
+      result.style.display = "block";
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.getElementById("quizForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const form = this;
+      const fd = new FormData(form);
+      const submitBtn = document.getElementById("submitBtn");
+
+      // ブラウザ標準バリデーション
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "送信中...";
+      setStatus("診断中です...");
+
+      try {
+        // 4軸集計
+        const count = {M:0,F:0,S:0,R:0,P:0,N:0,E:0,L:0};
+        ["q1","q2","q3","q4","q5","q6","q7","q8"].forEach(q => {
+          const v = fd.get(q);
+          count[v] += 1;
+        });
+
+        const a1 = pickAxis("M","F",count);
+        const a2 = pickAxis("S","R",count);
+        const a3 = pickAxis("P","N",count);
+        const a4 = pickAxis("E","L",count);
+        const code = a1 + a2 + a3 + a4;
+
+        const years = Number(fd.get("years"));
+        const passion = Number(fd.get("passion"));
+        const aruaruCount = fd.getAll("aruaru").length;
+        const score = years + passion + Math.min(5, aruaruCount);
+
+        const [deg, degDesc] = degreeLabel(score);
+
+        // 先に結果表示（UX優先）
+        showResult({ code, count, score, deg, degDesc });
+
+        // 送信用データ
+        const payload = {
+          q1: fd.get("q1"), q2: fd.get("q2"), q3: fd.get("q3"), q4: fd.get("q4"),
+          q5: fd.get("q5"), q6: fd.get("q6"), q7: fd.get("q7"), q8: fd.get("q8"),
+          years, passion, aruaruCount,
+          typeCode: code,
+          typeName: TYPE_NAME[code] || "ユニークタイプ",
+          score,
+          degreeLabel: deg
+        };
+
+        // Apps Scriptへ送信
+        const res = await fetch(ENDPOINT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        // JSONが返らない場合にも対応
+        let ok = false;
+        try {
+          const json = await res.json();
+          ok = !!json.ok;
+        } catch (_) {
+          // no-op
+        }
+
+        if (ok) {
+          setStatus("送信に成功しました。診断結果を保存しました。", "ok");
+        } else {
+          setStatus("診断結果は表示済みです（保存確認はできませんでした）。", "ng");
+        }
+
+      } catch (err) {
+        console.error(err);
+        setStatus("送信でエラーが発生しました（診断結果は表示済みです）。", "ng");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "送信して診断する";
+      }
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("quizForm").reset();
+      document.getElementById("result").style.display = "none";
+      setStatus("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
+</body>
+</html>
